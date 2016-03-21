@@ -73,11 +73,10 @@ class NewVod extends Component {
     // That's the reason why we need to call forceUpdate :/
 
     if (show.isActive) {
+      show.isActive = false;
+      this.forceUpdate(); // force the update (to remove) the full Show View component
 
       Animated.spring(this.state.openVal, {toValue: 0, ...config}).start(() => {
-        show.isActive = false;
-        this.forceUpdate();
-
         requestAnimationFrame(() => {
           this.setState({
             activeShow: null,
@@ -85,6 +84,7 @@ class NewVod extends Component {
           });
         })
       });
+
     } else {
       show.isActive = true;
 
