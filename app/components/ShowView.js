@@ -67,7 +67,6 @@ export default class ShowCard extends Component {
 
     this.state = {
       fadeAnim: new Animated.Value(0),
-      dismissY: new Animated.Value(0),
       dismissYDrag: new Animated.Value(0),
       dismissHandlers: {},
     }
@@ -84,14 +83,14 @@ export default class ShowCard extends Component {
     console.log('do custom dismissing stuff');
     this.setState({isDismissing: true});
     Animated.timing(
-      this.state.dismissY,
+      this.props.dismissVal,
       {
         toValue: 1,
         duration: 150,
         easing: Easing.in(Easing.sin)
       },
     ).start(() => {
-      this.props.onSelected();
+      this.props.onCardDismissed();
     });
   };
 
@@ -103,7 +102,7 @@ export default class ShowCard extends Component {
       console.log('onResponderRelease');
 
       if (this.props.isCard) {
-        this.props.onSelected();
+        this.props.onCardOpen();
       } else {
         lolActuallyClose();
       }
@@ -125,7 +124,7 @@ export default class ShowCard extends Component {
 
           if (!this.props.containerLayout) return
 
-          Animated.timing(this.state.dismissY, {
+          Animated.timing(this.props.dismissVal, {
             easing: (t) => t,
             duration: 1,
             toValue: this.state.dismissYDrag.interpolate({
@@ -149,7 +148,7 @@ export default class ShowCard extends Component {
           } else {
             console.log('touch gave up before threshold!');
 
-            Animated.spring(this.state.dismissY, {
+            Animated.spring(this.props.dismissVal, {
               toValue: 0
             }).start();
           }
@@ -182,8 +181,6 @@ export default class ShowCard extends Component {
 
     const _containerLayout = containerLayout || {};
 
-    console.log(this.state.dismissY);
-
     const rootProps = {
       onLayout,
       ...this.touchHandlers,
@@ -200,7 +197,7 @@ export default class ShowCard extends Component {
           backgroundColor: openVal.interpolate({inputRange: [0, 1], outputRange: ['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 1)']}),
         },
         this.state.isDismissing && {
-          top:    this.state.dismissY.interpolate({inputRange: [0, 1], outputRange: [0, _containerLayout.height]}),
+          top:    this.props.dismissVal.interpolate({inputRange: [0, 1], outputRange: [0, _containerLayout.height]}),
         }
       ],
     }

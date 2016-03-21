@@ -33,6 +33,7 @@ class NewVod extends Component {
       shows: null,
       activeShow: null,
       openVal: new Animated.Value(0),
+      dismissVal: new Animated.Value(0),
       scrollOffset: TITLE_BAR_HEIGHT * -1,
     };
   }
@@ -58,6 +59,8 @@ class NewVod extends Component {
 
   restLayouts = {};
 
+  springConfig: {tension: 200, friction: 15};
+
   onLayout = (e) => {
     this.setState({layout: e.nativeEvent.layout});
   };
@@ -65,38 +68,46 @@ class NewVod extends Component {
   onCardLayout = (...args) => {
   };
 
-  onCardSelect(show) {
-    // Most of this can probably actually maybe be moved into the ShowView itself?
-    var config = {tension: 200, friction: 15};
 
-    // It's probably not the best that we're mutating the show object.
-    // That's the reason why we need to call forceUpdate :/
+  // It's probably not the best that we're mutating the show object.
+  // That's the reason why we need to call forceUpdate :/
 
-    if (show.isActive) {
-      show.isActive = false;
-      this.forceUpdate(); // force the update (to remove) the full Show View component
+  onCardOpen(show) {
+    console.log('onCardOpen', show.name);
+    show.isActive = true;
 
-      Animated.spring(this.state.openVal, {toValue: 0, ...config}).start(() => {
-        requestAnimationFrame(() => {
-          this.setState({
-            activeShow: null,
-            activeCardInitialLayout: null,
-          });
-        })
+    this.setState({
+      activeShow: show,
+      activeCardInitialLayout: this.restLayouts[show.slug],
+    }, () => {
+      Animated.spring(this.state.openVal, {toValue: 1, ...this.springConfig}).start(() => {
+        this.onCardOpened(show);
       });
-
-    } else {
-      show.isActive = true;
-
-      this.setState({
-        activeShow: show,
-        activeCardInitialLayout: this.restLayouts[show.slug],
-      }, () => {
-        Animated.spring(this.state.openVal, {toValue: 1, ...config}).start();
-      });
-    }
-
+    });
   };
+
+  onCardOpened(show) {
+    console.log('onCardOpened', show.name);
+  }
+
+  onCardDismiss(show) {
+    console.log('onCardDismiss', show.name);
+    show.isActive = false;
+    this.forceUpdate(); // force the update (to remove) the full Show View component
+
+    requestAnimationFrame(() => {
+      this.setState({
+        activeShow: null,
+        activeCardInitialLayout: null,
+      }, () => {
+        this.onCardDismissed(show);
+      });
+    })
+  }
+
+  onCardDismissed(show) {
+    console.log('onCardDismissed', show.name);
+  }
 
   renderLoading() {
     return (
@@ -115,7 +126,7 @@ class NewVod extends Component {
   };
 
   render() {
-    const { shows, activeShow, openVal } = this.state;
+    const { shows, activeShow, openVal, dismissVal } = this.state;
     let activeCard;
 
     if (!shows) {
@@ -134,7 +145,7 @@ class NewVod extends Component {
           isCard
           isDummy={show.isActive}
           key={show.slug}
-          onSelected={this.onCardSelect.bind(this, show)}
+          onCardOpen={this.onCardOpen.bind(this, show)}
           onLayout={onLayout}
         />
       );
@@ -160,10 +171,12 @@ class NewVod extends Component {
           <ShowView
             {...activeShow}
             openVal={openVal}
+            dismissVal={dismissVal}
             key={'active'}
             scrollOffset={this.state.scrollOffset}
-            onSelected={this.onCardSelect.bind(this, activeShow)}
             restLayout={this.state.activeCardInitialLayout}
+            onCardDismiss={this.onCardDismiss.bind(this, activeShow)}
+            onCardDismissed={this.onCardDismissed.bind(this, activeShow)}
             containerLayout={this.state.layout} />
         )}
       </Animated.View>
