@@ -55,8 +55,8 @@ export default class ShowCard extends Component {
   };
 
   render() {
-    const { image, isCard, containerLayout, restLayout, onLayout, openVal } = this.props;
-    const isActive = !isCard;
+    const { image, isCard, isDummy, containerLayout, restLayout, onLayout, openVal } = this.props;
+    const isFullView = !isCard;
 
     const rootProps = {
       onLayout,
@@ -64,8 +64,8 @@ export default class ShowCard extends Component {
       style: [
         styles.card,
         isCard && { opacity: this.state.fadeAnim },
-        isActive && styles.activeCard,
-        isActive && {
+        isFullView && styles.activeCard,
+        isFullView && {
           left:   openVal.interpolate({inputRange: [0, 1], outputRange: [restLayout.x, 0]}),
           top:    openVal.interpolate({inputRange: [0, 1], outputRange: [restLayout.y - this.props.scrollOffset, 0]}),
           width:  openVal.interpolate({inputRange: [0, 1], outputRange: [_styles.card.width, containerLayout.width]}),
@@ -85,7 +85,7 @@ export default class ShowCard extends Component {
 
     const imageStyles = [
       styles.image,
-      isActive && {
+      isFullView && {
         flex: 0,
         width:  openVal.interpolate({inputRange: [0, 1], outputRange: [restLayout.width, containerLayout.width]}),
         height: openVal.interpolate({inputRange: [0, 1], outputRange: [restLayout.width * (9/16), containerLayout.width * (9/16)]}),
@@ -94,16 +94,12 @@ export default class ShowCard extends Component {
 
     return (
       <Animated.View {...rootProps} >
-        {/* ((isCard && !this.props.isActive) || isActive ) && (
+        { !isDummy &&
           <Animated.Image source={{uri: image.sizes.w768}}
             onLoadEnd={this.onImageLoaded}
             style={imageStyles}
           />
-        )*/}
-        <Animated.Image source={{uri: image.sizes.w768}}
-          onLoadEnd={this.onImageLoaded}
-          style={imageStyles}
-        />
+        }
       </Animated.View>
     );
   }

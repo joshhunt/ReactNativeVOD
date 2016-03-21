@@ -66,15 +66,24 @@ class NewVod extends Component {
   };
 
   onCardSelect(show) {
-    var config = {tension: 300, friction: 20};
+    // Most of this can probably actually maybe be moved into the ShowView itself?
+    var config = {tension: 200, friction: 15};
+
+    // It's probably not the best that we're mutating the show object.
+    // That's the reason why we need to call forceUpdate :/
 
     if (show.isActive) {
-      show.isActive = false;
+
       Animated.spring(this.state.openVal, {toValue: 0, ...config}).start(() => {
-        this.setState({
-          activeShow: null,
-          activeCardInitialLayout: null,
-        });
+        show.isActive = false;
+        this.forceUpdate();
+
+        requestAnimationFrame(() => {
+          this.setState({
+            activeShow: null,
+            activeCardInitialLayout: null,
+          });
+        })
       });
     } else {
       show.isActive = true;
@@ -123,12 +132,13 @@ class NewVod extends Component {
         <ShowView
           {...show}
           isCard
+          isDummy={show.isActive}
           key={show.slug}
           onSelected={this.onCardSelect.bind(this, show)}
           onLayout={onLayout}
         />
       );
-    })
+    });
 
     return (
       <Animated.View style={styles.container} onLayout={this.onLayout}>
